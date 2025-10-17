@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 clear
-SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 MOBILE_DIR=$(dirname "${SCRIPT_DIR}")
 
 # app.keychain の設定
+TEAM_ID=8H26AJ8X5P
 KEYCHAIN_NAME=app.keychain
 KEYCHAIN_PATH=~/Library/Keychains/$KEYCHAIN_NAME-db
 KEYCHAIN_PASS=1212
@@ -41,11 +42,8 @@ cp certs/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
 
 # reactive-nativeおよびiosの依頼関係のインストール
-cd "${MOBILE_DIR}"
+cd ${MOBILE_DIR} || exit 1
 npm install && bundle install
-cd "${SCRIPT_DIR}"
-pod install
-xattr -w com.apple.xcode.CreatedByBuildSystem true build
 
 APP_PREFIX="C-SAAF"
 APP_NAME="Mobile"
@@ -54,56 +52,59 @@ TODAY=$(date +"%Y%m%d")
 
 # 各種ID、プロファイル名の設定
 MATRIX=(
-  "Mobile,Debug,cap,8H26AJ8X5P,org.reactjs.native.example.Mobile.cap,MobileCapDebug,Apple Development"
-  "Mobile,Debug,pa,8H26AJ8X5P,org.reactjs.native.example.Mobile.pa,MobilePaDebug,Apple Development"
-  "Mobile,Debug,honban,8H26AJ8X5P,org.reactjs.native.example.Mobile.honban,MobileHonbanDebug,Apple Development"
-  "Mobile,Release,cap,8H26AJ8X5P,org.reactjs.native.example.Mobile.cap,MobileCapRelease,Apple Distribution"
-  "Mobile,Release,pa,8H26AJ8X5P,org.reactjs.native.example.Mobile.pa,MobilePaRelease,Apple Distribution"
-  "Mobile,Release,honban,8H26AJ8X5P,org.reactjs.native.example.Mobile.honban,MobileHonbanRelease,Apple Distribution"
+  "Mobile,Debug,debug,cap,org.reactjs.native.example.Mobile.cap,MobileCapDebug,Apple Development,"
+  "Mobile,Debug,debug,pa,org.reactjs.native.example.Mobile.pa,MobilePaDebug,Apple Development,"
+  "Mobile,Debug,debug,honban,org.reactjs.native.example.Mobile.honban,MobileHonbanDebug,Apple Development,"
+  "Mobile,Release,release,cap,org.reactjs.native.example.Mobile.cap,MobileCapRelease,Apple Distribution,"
+  "Mobile,Release,release,pa,org.reactjs.native.example.Mobile.pa,MobilePaRelease,Apple Distribution,"
+  "Mobile,Release,release,honban,org.reactjs.native.example.Mobile.honban,MobileHonbanRelease,Apple Distribution,"
 )
 
-cd "${SCRIPT_DIR}"
+cd "${SCRIPT_DIR}" || exit 1
 rm -rf output
 mkdir -p output
-pod install
+
+trim_cr() { tr -d '\r'; }
 
 for ROW in "${MATRIX[@]}"; do
-  echo "${ROW}"
-  IFS=',' read -r SCHEME CONFIG TARGET TEAM_ID DOMAIN SPECIFIER SIGN <<< "${ROW}"
-
-  cd "${MOBILE_DIR}"
+  ROW=$(printf '%s' "${ROW}" | trim_cr)
+  IFS=',' read -r SCHEME CONFIG LOWER TARGET DOMAIN SPECIFIER SIGN <<<"${ROW}"
+  echo "SCHEME: ${SCHEME}, CONFIG: ${CONFIG}, LOWER: ${LOWER}, TARGET: ${TARGET}, DOMAIN: ${DOMAIN}, SPECIFIER: ${SPECIFIER}, SIGN: ${SIGN}"
+  cd "${MOBILE_DIR}" || exit 1
   DEV_MODE=$([ "${CONFIG}" == "Debug" ])
   npx react-native bundle --entry-file index.js --platform ios --dev "${DEV_MODE}" --bundle-output ios/main.jsbundle --assets-dest ios
 
-  cd "${SCRIPT_DIR}"
+  cd "${SCRIPT_DIR}" || exit 1
+  rm -rf build
+  pod install
+  xattr -w com.apple.xcode.CreatedByBuildSystem true build
   MARKETING_VERSION=$(xcodebuild -project "${PROJ}" -scheme "${SCHEME}" -configuration "${CONFIG}" -showBuildSettings | awk '/MARKETING_VERSION/ {print $3; exit}')
   CURRENT_PROJECT_VERSION=$(xcodebuild -project "${PROJ}" -scheme "${SCHEME}" -configuration "${CONFIG}" -showBuildSettings | awk '/CURRENT_PROJECT_VERSION/ {print $3; exit}')
 
   xcodebuild clean archive \
-      -workspace "${APP_NAME}.xcworkspace" \
-      -scheme "${SCHEME}" \
-      -configuration "${CONFIG}" \
-      -archivePath "build/${SPECIFIER}" \
-      -destination 'generic/platform=iOS' \
-      MARKETING_VERSION="${MARKETING_VERSION}" \
-      CURRENT_PROJECT_VERSION="${CURRENT_PROJECT_VERSION}" \
-      PRODUCT_BUNDLE_IDENTIFIER="${DOMAIN}" \
-      DEVELOPMENT_TEAM="${TEAM_ID}" \
-      CODE_SIGN_STYLE="Manual" \
-      PROVISIONING_PROFILE_SPECIFIER="${SPECIFIER}" \
-      CODE_SIGN_IDENTITY="${SIGN}"
+    -workspace "${APP_NAME}.xcworkspace" \
+    -scheme "${SCHEME}" \
+    -configuration "${CONFIG}" \
+    -archivePath "build/${SPECIFIER}" \
+    -destination 'generic/platform=iOS' \
+    MARKETING_VERSION="${MARKETING_VERSION}" \
+    CURRENT_PROJECT_VERSION="${CURRENT_PROJECT_VERSION}" \
+    PRODUCT_BUNDLE_IDENTIFIER="${DOMAIN}" \
+    DEVELOPMENT_TEAM="${TEAM_ID}" \
+    CODE_SIGN_STYLE="Manual" \
+    PROVISIONING_PROFILE_SPECIFIER="${SPECIFIER}" \
+    CODE_SIGN_IDENTITY="${SIGN}"
 
   xcodebuild -exportArchive \
-        -archivePath "build/${SPECIFIER}.xcarchive" \
-        -exportOptionsPlist "ExportOptions/ExportOptions-${CONFIG}.plist" \
-        -exportPath build/ipa
+    -archivePath "build/${SPECIFIER}.xcarchive" \
+    -exportOptionsPlist "ExportOptions/ExportOptions-${CONFIG}.plist" \
+    -exportPath build/ipa
 
-  OUT_PUT_FILE_NAME="${APP_PREFIX}-${APP_NAME}-${CONFIG}-${TARGET}-${MARKETING_VERSION}-${CURRENT_PROJECT_VERSION}-${TODAY}.ipa"
+  OUT_PUT_FILE_NAME="${APP_PREFIX}-${APP_NAME}-${LOWER}-${TARGET}-${MARKETING_VERSION}-${CURRENT_PROJECT_VERSION}-${TODAY}.ipa"
 
   mv "build/ipa/${APP_NAME}.ipa" "output/${OUT_PUT_FILE_NAME}"
+  rm -rf build
 done
-
-
 
 # keychainの回復
 security default-keychain -s ~/Library/Keychains/login.keychain-db
