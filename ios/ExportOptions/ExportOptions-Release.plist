@@ -4,7 +4,7 @@
 <plist version="1.0">
 <dict>
   <key>method</key>
-  <string>ad-hoc</string>
+  <string>release-testing</string>
   <key>signingStyle</key>
   <string>manual</string>
   <key>compileBitcode</key>
@@ -16,14 +16,16 @@
   <key>provisioningProfiles</key>
   <dict>
     <key>org.reactjs.native.example.Mobile.cap</key>
-    <string>MobileCapDis</string>
+    <string>MobileCapRelease</string>
     <key>org.reactjs.native.example.Mobile.pa</key>
-    <string>MobilePaDis</string>
+    <string>MobilePaRelease</string>
     <key>org.reactjs.native.example.Mobile.honban</key>
-    <string>MobileHonbanDis</string>
+    <string>MobileHonbanRelease</string>
   </dict>
   <key>destination</key>
   <string>export</string>
+  <key>signingCertificate</key>
+  <string>Apple Distribution</string>
   <key>teamID</key>
   <string>8H26AJ8X5P</string>
 </dict>

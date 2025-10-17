@@ -15,12 +15,17 @@
   <false/>
   <key>provisioningProfiles</key>
   <dict>
-    <key>org.reactjs.native.example.Mobile.cap</key><string>MobileCapDev</string>
-    <key>org.reactjs.native.example.Mobile.pa</key><string>MobilePaDev</string>
-    <key>org.reactjs.native.example.Mobile.honban</key><string>MobileHonbanDev</string>
+    <key>org.reactjs.native.example.Mobile.cap</key>
+    <string>MobileCapDebug</string>
+    <key>org.reactjs.native.example.Mobile.pa</key>
+    <string>MobilePaDebug</string>
+    <key>org.reactjs.native.example.Mobile.honban</key>
+    <string>MobileHonbanDebug</string>
   </dict>
   <key>destination</key>
   <string>export</string>
+  <key>signingCertificate</key>
+  <string>Apple Development</string>
   <key>teamID</key>
   <string>8H26AJ8X5P</string>
 </dict>
