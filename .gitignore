@@ -24,7 +24,6 @@ DerivedData
 
 # Android/IntelliJ
 #
-build/
 .idea
 .gradle
 local.properties
@@ -73,3 +72,20 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# React Native
+Gemfile.lock
+
+# Android
+
+# ios
+ios/Pods/
+ios/.symlinks/
+ios/Podfile.lock
+ios/.xcode.env.local
+ios/build/
+ios/assets/
+ios/Mobile.xcworkspace/
+
+
+

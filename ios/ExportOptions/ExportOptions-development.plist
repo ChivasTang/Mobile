@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>debugging</string>
+  <key>signingStyle</key>
+  <string>manual</string>
+  <key>compileBitcode</key>
+  <false/>
+  <key>stripSwiftSymbols</key>
+  <true/>
+  <key>manageAppVersionAndBuildNumber</key>
+  <false/>
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>org.reactjs.native.example.Mobile.cap</key><string>MobileCapDev</string>
+    <key>org.reactjs.native.example.Mobile.pa</key><string>MobilePaDev</string>
+    <key>org.reactjs.native.example.Mobile.honban</key><string>MobileHonbanDev</string>
+  </dict>
+  <key>destination</key>
+  <string>export</string>
+  <key>teamID</key>
+  <string>8H26AJ8X5P</string>
+</dict>
+</plist>
